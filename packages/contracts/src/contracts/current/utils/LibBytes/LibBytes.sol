@@ -472,7 +472,6 @@ library LibBytes {
     {
         // Read length of nested bytes
         uint256 nestedBytesLength = readUint256(b, index);
-        index += 32;
 
         // Assert length of <b> is valid, given
         // length of nested bytes
