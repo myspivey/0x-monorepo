@@ -28,7 +28,7 @@ const expect = chai.expect;
 const blockchainLifecycle = new BlockchainLifecycle(web3Wrapper);
 
 // tslint:disable:no-unnecessary-type-assertion
-describe('Asset Transfer Proxies', () => {
+describe.only('Asset Transfer Proxies', () => {
     let owner: string;
     let notAuthorized: string;
     let exchangeAddress: string;
@@ -91,15 +91,15 @@ describe('Asset Transfer Proxies', () => {
     afterEach(async () => {
         await blockchainLifecycle.revertAsync();
     });
-    describe('Transfer Proxy - ERC20', () => {
-        describe('transferFrom', () => {
-            it('should successfully transfer tokens', async () => {
+    describe.only('Transfer Proxy - ERC20', () => {
+        describe.only('transferFrom', () => {
+            it.only('should successfully transfer tokens', async () => {
                 // Construct ERC20 asset data
                 const encodedAssetData = assetProxyUtils.encodeERC20AssetData(zrxToken.address);
                 // Perform a transfer from makerAddress to takerAddress
                 const erc20Balances = await erc20Wrapper.getBalancesAsync();
                 const amount = new BigNumber(10);
-                await web3Wrapper.awaitTransactionSuccessAsync(
+                const res = await web3Wrapper.awaitTransactionSuccessAsync(
                     await erc20Proxy.transferFrom.sendTransactionAsync(
                         encodedAssetData,
                         makerAddress,
@@ -109,6 +109,7 @@ describe('Asset Transfer Proxies', () => {
                     ),
                     constants.AWAIT_TRANSACTION_MINED_MS,
                 );
+                console.log('ERC20 transferFrom gas:', res.gasUsed);
                 // Verify transfer was successful
                 const newBalances = await erc20Wrapper.getBalancesAsync();
                 expect(newBalances[makerAddress][zrxToken.address]).to.be.bignumber.equal(
@@ -183,8 +184,8 @@ describe('Asset Transfer Proxies', () => {
             });
         });
 
-        describe('batchTransferFrom', () => {
-            it('should succesfully make multiple token transfers', async () => {
+        describe.only('batchTransferFrom', () => {
+            it.only('should succesfully make multiple token transfers', async () => {
                 const erc20Balances = await erc20Wrapper.getBalancesAsync();
 
                 const encodedAssetData = assetProxyUtils.encodeERC20AssetData(zrxToken.address);
@@ -206,6 +207,7 @@ describe('Asset Transfer Proxies', () => {
                     txHash,
                     constants.AWAIT_TRANSACTION_MINED_MS,
                 );
+                console.log('ERC20 batchTransferFrom gas:', res.gasUsed);
                 const newBalances = await erc20Wrapper.getBalancesAsync();
 
                 expect(res.logs.length).to.equal(numTransfers);
@@ -240,9 +242,9 @@ describe('Asset Transfer Proxies', () => {
         });
     });
 
-    describe('Transfer Proxy - ERC721', () => {
-        describe('transferFrom', () => {
-            it('should successfully transfer tokens', async () => {
+    describe.only('Transfer Proxy - ERC721', () => {
+        describe.only('transferFrom', () => {
+            it.only('should successfully transfer tokens', async () => {
                 // Construct ERC721 asset data
                 const encodedAssetData = assetProxyUtils.encodeERC721AssetData(erc721Token.address, erc721MakerTokenId);
                 // Verify pre-condition
@@ -250,7 +252,7 @@ describe('Asset Transfer Proxies', () => {
                 expect(ownerMakerAsset).to.be.bignumber.equal(makerAddress);
                 // Perform a transfer from makerAddress to takerAddress
                 const amount = new BigNumber(1);
-                await web3Wrapper.awaitTransactionSuccessAsync(
+                const res = await web3Wrapper.awaitTransactionSuccessAsync(
                     await erc721Proxy.transferFrom.sendTransactionAsync(
                         encodedAssetData,
                         makerAddress,
@@ -260,6 +262,7 @@ describe('Asset Transfer Proxies', () => {
                     ),
                     constants.AWAIT_TRANSACTION_MINED_MS,
                 );
+                console.log('ERC721 transferFrom gas used', res.gasUsed);
                 // Verify transfer was successful
                 const newOwnerMakerAsset = await erc721Token.ownerOf.callAsync(erc721MakerTokenId);
                 expect(newOwnerMakerAsset).to.be.bignumber.equal(takerAddress);
@@ -428,8 +431,8 @@ describe('Asset Transfer Proxies', () => {
             });
         });
 
-        describe('batchTransferFrom', () => {
-            it('should succesfully make multiple token transfers', async () => {
+        describe.only('batchTransferFrom', () => {
+            it.only('should succesfully make multiple token transfers', async () => {
                 const erc721TokensById = await erc721Wrapper.getBalancesAsync();
                 const [makerTokenIdA, makerTokenIdB] = erc721TokensById[makerAddress][erc721Token.address];
 
@@ -453,6 +456,7 @@ describe('Asset Transfer Proxies', () => {
                     txHash,
                     constants.AWAIT_TRANSACTION_MINED_MS,
                 );
+                console.log('ERC721 batchTransferFrom gas', res.gasUsed);
                 expect(res.logs.length).to.equal(numTransfers);
 
                 const newOwnerMakerAssetA = await erc721Token.ownerOf.callAsync(makerTokenIdA);

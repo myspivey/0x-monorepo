@@ -31,7 +31,7 @@ chaiSetup.configure();
 const expect = chai.expect;
 const blockchainLifecycle = new BlockchainLifecycle(web3Wrapper);
 // tslint:disable:no-unnecessary-type-assertion
-describe('Exchange core', () => {
+describe.only('Exchange core', () => {
     let makerAddress: string;
     let owner: string;
     let takerAddress: string;
@@ -125,12 +125,12 @@ describe('Exchange core', () => {
     afterEach(async () => {
         await blockchainLifecycle.revertAsync();
     });
-    describe('fillOrder', () => {
+    describe.only('fillOrder', () => {
         beforeEach(async () => {
             erc20Balances = await erc20Wrapper.getBalancesAsync();
             signedOrder = orderFactory.newSignedOrder();
         });
-        it('should transfer the correct amounts when makerAssetAmount === takerAssetAmount', async () => {
+        it.only('should transfer the correct amounts when makerAssetAmount === takerAssetAmount', async () => {
             signedOrder = orderFactory.newSignedOrder({
                 makerAssetAmount: Web3Wrapper.toBaseUnitAmount(new BigNumber(100), 18),
                 takerAssetAmount: Web3Wrapper.toBaseUnitAmount(new BigNumber(100), 18),
@@ -142,7 +142,8 @@ describe('Exchange core', () => {
             expect(takerAssetFilledAmountBefore).to.be.bignumber.equal(0);
 
             const takerAssetFillAmount = signedOrder.takerAssetAmount.div(2);
-            await exchangeWrapper.fillOrderAsync(signedOrder, takerAddress, { takerAssetFillAmount });
+            const res = await exchangeWrapper.fillOrderAsync(signedOrder, takerAddress, { takerAssetFillAmount });
+            console.log('ERC20 fillOrder gas', res.gasUsed);
 
             const makerAmountBoughtAfter = await exchangeWrapper.getTakerAssetFilledAmountAsync(
                 orderHashUtils.getOrderHashHex(signedOrder),
@@ -704,8 +705,8 @@ describe('Exchange core', () => {
         });
     });
 
-    describe('Testing Exchange of ERC721 Tokens', () => {
-        it('should successfully exchange a single token between the maker and taker (via fillOrder)', async () => {
+    describe.only('Testing Exchange of ERC721 Tokens', () => {
+        it.only('should successfully exchange a single token between the maker and taker (via fillOrder)', async () => {
             // Construct Exchange parameters
             const makerAssetId = erc721MakerAssetIds[0];
             const takerAssetId = erc721TakerAssetIds[1];
@@ -724,6 +725,7 @@ describe('Exchange core', () => {
             const takerAssetFillAmount = signedOrder.takerAssetAmount;
             // tslint:disable-next-line:no-unused-variable
             const res = await exchangeWrapper.fillOrderAsync(signedOrder, takerAddress, { takerAssetFillAmount });
+            console.log('ERC721 fillOrder gas', res.gasUsed);
             // Verify post-conditions
             const newOwnerMakerAsset = await erc721Token.ownerOf.callAsync(makerAssetId);
             expect(newOwnerMakerAsset).to.be.bignumber.equal(takerAddress);
